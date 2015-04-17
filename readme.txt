@@ -1,6 +1,6 @@
 === MySQL Monitor ===
 Contributors: zeleniy.spb
-Tags: sqlme, mysql, sql, monitoring, profiling, performance
+Tags: mysql, sql, monitoring, profiling, performance
 Requires at least: 4.0
 Tested up to: 4.1.1
 Stable tag: 0.9
