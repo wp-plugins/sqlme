@@ -1,5 +1,5 @@
 === MySQL Monitor ===
-Contributors: zeleniy
+Contributors: zeleniy.spb
 Tags: sqlme, mysql, sql, monitoring, profiling, performance
 Requires at least: 4.0
 Tested up to: 4.1.1
@@ -13,6 +13,7 @@ SqlMe - MySQL monitoring and profiling tool for developers and administrators.
 
 SqlMe will help you with monitoring of MySQL server and understanding what it does when you sleep.
 Plugin features:
+
 * show how much queries wordpress does per page
 * show queries per table interactive bar chart (process list)
 * show database tables, their size and engine type
@@ -39,4 +40,6 @@ Just install it as a common plugin and find "SqlMe" menu item in admin area.
 
 == Changelog ==
 
-= 0.9 = 
+= 0.9 =
+
+Initial commit.
