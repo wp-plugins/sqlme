@@ -1,0 +1,14 @@
+<div class="sqlme-notice">
+    This is just a settings tab. Here you can enable or disable profiling.
+</div>
+<table>
+    <tr>
+        <td><label for="sqlme-count-profiling-setting">Enable count profiling</td>
+        <td><input type="checkbox" id="sqlme-count-profiling-setting" <?php echo $this->isCountingEnabled ?> /></td>
+    </tr>
+</table>
+<script>
+jQuery("#sqlme-count-profiling-setting").change(function() {
+    jQuery.get("/wp-admin/admin-ajax.php?action=sqlme_settings_switch-counting")
+})
+</script>

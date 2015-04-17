@@ -1,0 +1,58 @@
+<style>
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+#sqlme-processlist-errors {
+    display: none;
+    padding: 10px;
+}
+#sqlme-processlist-errors-container {
+    border: 1px solid #444;
+    overflow-y: auto;
+    max-height: 100px;
+}
+#sqlme-processlist-errors-container div {
+    border: 1px solid #444;
+    margin: 5px;
+    padding: 2px 10px;
+    border-radius: 3px;
+    background-color: #ffd4d4;
+}
+</style>
+<div class="sqlme-notice">
+    In this tab plugin shows result of <a href="https://dev.mysql.com/doc/refman/<?php echo substr($this->variables['version'], 0, 3) ?>/en/show-processlist.html">SHOW FULL PROCESSLIST</a>
+    query and create bar chart with amount of different queries per table. %system% table is just for queries to no table,
+    for example like "SHOW PROCESSLIST" or "SELECT 1". If you always see just one SHOW query in %system% table, this means
+    that your server is not loaded.
+</div>
+<div id="sqlme-processlist-chart"></div>
+<div id="sqlme-processlist-errors">
+    <div id="sqlme-processlist-errors-header">Errors:</div>
+    <div id="sqlme-processlist-errors-container"></div>
+</div>
+<table width="100%" id="sqlme-processlist-table">
+    <tr>
+        <th>Id</th>
+        <th>User</th>
+        <th>Host</th>
+        <th>db</th>
+        <th>Command</th>
+        <th>Time</th>
+        <th>State</th>
+        <th align="left">Info</th>
+    </tr>
+    <?php foreach ($this->processlist as $process): ?>
+    <tr>
+        <td align="center"><?php echo $process['Id'] ?></td>
+        <td align="center"><?php echo $process['User'] ?></td>
+        <td align="center"><?php echo $process['Host'] ?></td>
+        <td align="center"><?php echo $process['db'] ?></td>
+        <td align="center"><?php echo $process['Command'] ?></td>
+        <td align="center"><?php echo $process['Time'] ?></td>
+        <td align="center"><?php echo $process['State'] ?></td>
+        <td align="left"><?php echo $process['Info'] ?></td>
+    </tr>
+    <?php endforeach ?>
+</table>

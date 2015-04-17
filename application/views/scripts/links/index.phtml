@@ -1,0 +1,82 @@
+<link rel="stylesheet" type="text/css" media="screen" href="<?php echo plugins_url('ui.jqgrid.css', 'SqlMe/public/js/jquery.jqGrid-4.4.3/css/fake-tail') ?>" />
+<script src="<?php echo plugins_url('grid.locale-en.js', 'SqlMe/public/js/jquery.jqGrid-4.4.3/js/i18n/fake-tail') ?>" type="text/javascript"></script>
+<script src="<?php echo plugins_url('jquery.jqGrid.min.js', 'SqlMe/public/js/jquery.jqGrid-4.4.3/js/fake-tail') ?>" type="text/javascript"></script>
+<style>
+#sqlme-links-stat-table {
+    display: none;
+}
+</style>
+<div class="sqlme-notice">
+    Here plugin provide information about amount SQL queries per link. You can filter data by URI and press "Enter" to
+    see statistics. If table is empty you need to enable count profiling in the "Setting" tab.
+</div>
+<table class="sqlme-table" id="sqlme-links-stat-table" width="100%" border="1">
+    <thead>
+        <tr>
+            <th>Filter</th>
+            <th>Count</th>
+            <th>Min</th>
+            <th>Mean</th>
+            <th>Max</th>
+        </tr>
+    </thead>
+    <tbody id="sqlme-links-stat-table-body"></tbody>
+</table>
+<table id="sqlme-links-grid" width="100%"><tr><td></td></tr></table>
+<div id="sqlme-links-grid-pager"></div> 
+
+<script>
+jQuery(function () {
+    jQuery("#sqlme-links-grid").jqGrid({
+        url: "/wp-admin/admin-ajax.php?action=sqlme_links_list",
+        mtype: "GET",
+        datatype: "json",
+        autowidth: true,
+        pager: "#sqlme-links-grid-pager",
+        height: "auto",
+        rowNum: <?php echo $this->rowsPerPage ?>,
+        rowList: [10, 15, 20, 25, 30],
+        viewrecords: true,
+        colModel: [{
+            name: "host",
+            align: "center",
+            width: 50,
+            search: false
+        }, {
+            name: "uri"
+        }, {
+            name: "amount",
+            align: "center",
+            width: 30,
+            search: false
+        }, {
+            name: "date",
+            align: "center",
+            width: 50,
+            search: false
+        }]
+    });
+
+    jQuery("#sqlme-links-grid").jqGrid("filterToolbar", {
+        afterSearch: makeStatistics
+    });
+
+    function makeStatistics(a, b ,c) {
+
+        // var uri = jQuery("#sqlme-links-grid").jqGrid("getGridParam", "postData").uri;
+        // var uri = jQuery("#sqlme-links-grid").getGridParam("postData").uri;
+
+        jQuery.ajax({
+            url : "/wp-admin/admin-ajax.php?action=sqlme_links_stat",
+            data : {
+                uri : jQuery("#sqlme-links-grid").getGridParam("postData").uri
+            },
+            success: function(data, textStatus, jqXHR) {
+
+                jQuery("#sqlme-links-stat-table").show();
+                jQuery("#sqlme-links-stat-table-body").append(data);
+            }
+        })
+    }
+}); 
+</script>
