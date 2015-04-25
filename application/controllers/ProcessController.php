@@ -128,7 +128,7 @@ class ProcessController extends Zend_Controller_Action {
          * Register PHP-SQL-Parser class loader.
          */
         spl_autoload_register(array($this, '_autoloadPhpSqlParser'));
-        set_include_path(get_include_path() . PATH_SEPARATOR . WP_PLUGIN_DIR . '/SqlMe/library/PHPSQLParser/src');
+        set_include_path(get_include_path() . PATH_SEPARATOR . WP_PLUGIN_DIR . '/sqlme/library/PHPSQLParser/src');
         require_once 'PHPSQLParser/PHPSQLParser.php';
 
         /*
