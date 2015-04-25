@@ -11,7 +11,7 @@
         <th align="left">Table name</th>
         <th>Engine</th>
         <th>Rows number</th>
-        <th class="sqlme-refresh-cell"><img src="/wp-content/plugins/SqlMe/public/img/refresh.png" /></th>
+        <th class="sqlme-refresh-cell"><img src="/wp-content/plugins/sqlme/public/img/refresh.png" /></th>
     </tr>
     <?php foreach ($this->tables as $table): ?>
     <tr class="sqlme-data-rows">
@@ -24,7 +24,7 @@
         </td>
         <td align="center"><?php echo $table['engine'] ?></td>
         <td align="center" class="sqlme-amount-cell"><?php echo $table['amount'] ?></td>
-        <td align="center" class="sqlme-refresh-cell"><img src="/wp-content/plugins/SqlMe/public/img/refresh.png" /></td>
+        <td align="center" class="sqlme-refresh-cell"><img src="/wp-content/plugins/sqlme/public/img/refresh.png" /></td>
     </tr>
     <?php if (array_key_exists($table['name'], $this->datedTables)): ?>
         <tr class="sqlme-table-trend">
@@ -36,8 +36,8 @@
                         <option value="<?php echo $columnName ?>"><?php echo $columnName ?></option>
                     <?php endforeach ?>
                     </select>
-                    From: <input type="text" class="sqlme-trend-datepicker" name="from">
-                    To: <input type="text" class="sqlme-trend-datepicker" name="to">
+                    From: <input type="text" class="sqlme-trend-datepicker" id="sqlme-<?php echo $table['name'] ?>-from" name="from">
+                    To: <input type="text" class="sqlme-trend-datepicker" id="sqlme-<?php echo $table['name'] ?>-to" name="to">
                     <input type="submit" value="Show trends">
                 </form>
                 <div class="sqlme-table-trend-statistics">
@@ -52,7 +52,7 @@
     <tr>
         <td colspan="2"></td>
         <td align="center" id="sqlme-total-amount"><?php echo $this->totalAmount ?></td>
-        <th class="sqlme-refresh-cell"><img src="/wp-content/plugins/SqlMe/public/img/refresh.png" /></th>
+        <th class="sqlme-refresh-cell"><img src="/wp-content/plugins/sqlme/public/img/refresh.png" /></th>
     </tr>
 </table>
 <script>
@@ -65,15 +65,15 @@ jQuery(document).ready(function() {
         var tableName = $table.text();
         var $row = $table.closest("tr");
         $trendContainer = $row.next();
-        $trendContainer.slideToggle();
-
-        var today = new Date();
-        $trendContainer.find(".sqlme-trend-datepicker[name='from']").datepicker({
-            dateFormat: "dd/mm/yy"
-        }).datepicker("setDate", new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000))
-        $trendContainer.find(".sqlme-trend-datepicker[name='to']").datepicker({
-            dateFormat: "dd/mm/yy"
-        }).datepicker("setDate", new Date())
+        $trendContainer.slideToggle(400, function() {
+            var today = new Date();
+            $trendContainer.find("#sqlme-" + tableName + "-from").datepicker({
+                dateFormat: "dd/mm/yy"
+            }).datepicker("setDate", new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000))
+            $trendContainer.find("#sqlme-" + tableName + "-to").datepicker({
+                dateFormat: "dd/mm/yy"
+            }).datepicker("setDate", new Date())
+        });
     })
     /*
      * Load trends chart.

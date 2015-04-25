@@ -4,7 +4,8 @@
 <?php wp_enqueue_script("jquery-ui-tabs") ?>
 <?php wp_enqueue_script("jquery-ui-datepicker") ?>
 <!-- Include jQuery UI smoothness style -->
-<?php wp_enqueue_style('jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css') ?>
+<?php wp_register_style('jquery-ui-smoothness.css', plugins_url('jquery-ui-smoothness-1.8.2.css', 'sqlme/public/css/fake-tail')) ?>
+<?php wp_enqueue_style('jquery-ui-smoothness.css') ?>
 <!-- Include bload -->
 <?php wp_register_script('bload.js', plugins_url('bload.js', 'sqlme/public/js/bload/bload/fake-tail')) ?>
 <?php wp_enqueue_script('bload.js') ?>
@@ -109,7 +110,7 @@ sqlme.processlist = {};
 
 jQuery(function() {
     jQuery("#tabs").tabs({
-        active: 0,
+        active: 1,
         beforeLoad: function(event, ui) {
 
             if (ui.tab.data("loaded")) {
