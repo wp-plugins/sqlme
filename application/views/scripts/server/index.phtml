@@ -1,0 +1,212 @@
+<!-- Include jQuery and jQuery UI -->
+<?php wp_enqueue_script("jquery") ?>
+<?php wp_enqueue_script("jquery-ui-core") ?>
+<?php wp_enqueue_script("jquery-ui-tabs") ?>
+<?php wp_enqueue_script("jquery-ui-datepicker") ?>
+<!-- Include jQuery UI smoothness style -->
+<?php wp_enqueue_style('jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css') ?>
+<!-- Include bload -->
+<?php wp_register_script('bload.js', plugins_url('bload.js', 'sqlme/public/js/bload/bload/fake-tail')) ?>
+<?php wp_enqueue_script('bload.js') ?>
+<?php wp_register_style('bload.css', plugins_url('bload.css', 'sqlme/public/js/bload/bload/fake-tail')) ?>
+<?php wp_enqueue_style('bload.css') ?>
+<!-- Include nvd3 -->
+<?php wp_register_script('d3.min.js', plugins_url('d3.min.js', 'sqlme/public/js/d3-3.5.5/fake-tail')) ?>
+<?php wp_enqueue_script('d3.min.js') ?>
+<?php wp_register_script('nv.d3.min.js', plugins_url('nv.d3.min.js', 'sqlme/public/js/fake-tail')) ?>
+<?php wp_enqueue_script('nv.d3.min.js') ?>
+<?php wp_register_style('nv.d3.css', plugins_url('nv.d3.css', 'sqlme/public/css/fake-tail')) ?>
+<?php wp_enqueue_style('nv.d3.css') ?>
+<style>
+#sqlme-container {
+    margin: 20px 20px 20px 0;
+}
+#sqlme-processlist-container {
+    overflow-y: auto;
+}
+.sqlme-refresh-cell img {
+    cursor: pointer;
+}
+img.sqlme-loader {
+    display: block;
+    margin: auto auto;
+}
+.sqlme-notice {
+    border: 2px solid #444;
+    border-radius: 3px;
+    padding: 10px;
+    margin: 10px 0px;
+}
+.sqlme-table {
+    margin: 15px 0px;
+    border-collapse: collapse;
+}
+.sqlme-table-trend {
+    display: none;
+    height: 450px;
+}
+.sqlme-form-trend {
+    float: left;
+    margin-left: 2px;
+}
+.sqlme-table-trend-statistics {
+    margin: 2px 40px 2px 2px;
+    font-weight: bold;
+    float: right;
+}
+.sqlme-clear {
+    clear: both;
+}
+.sqlme-trend-datepicker {
+    width: 100px;
+}
+.sqlme-table-name {
+    text-decoration: underline;
+    cursor: pointer;
+}
+</style>
+<div id="sqlme-container">
+    <div id="tabs">
+        <ul>
+            <li><a href="#sqlme-processlist-tab">Server</a></li>
+            <li><a href="/wp-admin/admin-ajax.php?action=sqlme_tables_list#tabs-2">Tables</a></li>
+            <li><a href="/wp-admin/admin-ajax.php?action=sqlme_process_list#tabs-3">Processlist</a></li>
+            <!-- li><a href="/wp-admin/admin-ajax.php?action=sqlme_pages_list#tabs-3">Pages</a></li -->
+            <!-- li><a href="/wp-admin/admin-ajax.php?action=sqlme_posts_list#tabs-3">Posts</a></li -->
+            <li><a href="/wp-admin/admin-ajax.php?action=sqlme_links#tabs-4">Links</a></li>
+            <li><a href="/wp-admin/admin-ajax.php?action=sqlme_settings_list#tabs-5">Settings</a></li>
+            <li><a href="#tabs-6">About</a></li>
+        </ul>
+        <div id="sqlme-processlist-tab">
+            <div class="sqlme-notice">This tab just shows the result of 
+                <a href="https://dev.mysql.com/doc/refman/<?php echo substr($this->variables['version'], 0, 3) ?>/en/show-variables.html">SHOW SESSION VARIABLES</a> query.
+                In common sense this is your MySQL server settings.
+            </div>
+            <div>MySQL version: <?php echo $this->server ?> (<?php echo $this->variables['version_compile_machine'] ?>)</div>
+            <div id="sqlme-processlist-container">
+            <table class="sqlme-table" border="1">
+                <?php foreach ($this->variables as $key => $value): ?>
+                    <tr><td><?php echo $key ?></td><td><?php echo $value ?></td></tr>
+                <?php endforeach ?>
+            </table>
+            </div>
+        </div>
+        <div id="tabs-4"></div>
+        <div id="tabs-5"></div>
+        <div id="tabs-6">
+            <div class="sqlme-notice">
+                This plugin is just in beta version. So all your notices and suggestions are welcome.
+                If you encounter with error or have just a good idea, please, write me on
+                <a href="mailto:zeleniy.spb@gmail.com?subject=SqlMe plugin">zeleniy.spb@gmail.com</a>.
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+sqlme = {};
+sqlme.processlist = {};
+
+
+jQuery(function() {
+    jQuery("#tabs").tabs({
+        active: 0,
+        beforeLoad: function(event, ui) {
+
+            if (ui.tab.data("loaded")) {
+                event.preventDefault();
+                return;
+            }
+
+            ui.ajaxSettings.cache = false;
+            ui.panel.html('<img class="sqlme-loader" src="<?php echo plugins_url('bloading.gif', 'sqlme/public/js/bload/bload/fake-tail') ?>" />');
+            // ui.panel.html('<img class="sqlme-loader" src="/wp-content/plugins/sqlme/public/js/bload/images/hloader.gif" />');
+
+            ui.jqXHR.success(function() {
+                ui.tab.data("loaded", true);
+            })
+
+//             ui.jqXHR.fail(function() {
+//                 ui.panel.html(
+//                     "Couldn't load this tab. We'll try to fix this as soon as possible. " +
+//                     "If this wouldn't be a demo."
+//                 );
+//             });
+
+            switch (jQuery(ui.tab).text()) {
+                case 'Processlist': {
+                    jQuery.getJSON("/wp-admin/admin-ajax.php?action=sqlme_process_list", function (data) {
+                        ui.panel.html(data.processlist);
+                        sqlme.processlist = data.statistics;
+
+                        var alignLabels = function() {
+                            var xTicks = d3.select(".nv-x.nv-axis > g").selectAll("g");
+                            xTicks.selectAll("text").attr("transform", function() {
+                                return "translate (-10, 15) rotate(-90 0,0)"
+                            });
+                        }
+
+                        nv.addGraph(function() {
+                            var chart = nv.models.multiBarChart()
+                                .tooltips(alignLabels)
+                                .rotateLabels(-90)
+                                .margin({bottom: 150})
+                                .reduceXTicks(false)
+                                .showControls(false)
+                            .stacked(true)
+
+                            d3.select("#sqlme-processlist-chart")
+                                .style("height", "400px")
+                                .append("svg")
+                                .datum(data.statistics)
+                                .transition().duration(500)
+                            .call(chart);
+
+                            chart.yAxis.tickFormat(d3.format("d"))
+                            chart.dispatch.on("renderEnd", alignLabels);
+
+                            nv.utils.windowResize(chart.update);
+
+                            return chart;
+                        }, alignLabels);
+
+                        if (data.errors.length > 0) {
+                            jQuery("#sqlme-processlist-errors").show();
+                            var errorPanel = jQuery("#sqlme-processlist-errors-container");
+                            jQuery.each(data.errors, function(i, error) {
+                                errorPanel.append("<div>" + (i + 1) + ". " + error + "</div>");
+                            });
+                        }
+                    });
+
+                    return false;
+                }
+            }
+        }
+    });
+});
+</script>
+<script>
+function Mask() {
+
+}
+
+Mask.show = function(element, overlay) {
+    overlay = overlay || false;
+    return element.bload({
+        fadeInSpeed: 300, // The speed the loading screen fades in.
+        maskOpacity: .4, // Opacity of the mask. 
+        imagePath: false, // Path to the a difference loading image.
+        imagePadding: 16, // Padding around the loading image.
+        imageDims: {
+            w: 32,
+            h: 32
+        }, // Width and Height of the image.
+        fullScreen: false, // Enables full screen mode. 
+        overlay : { 
+            show: overlay, // Show an overlay over the entire area to mask.
+            color: '#000', // Color of the overlay. 
+            opacity: .2 // Opacity of the overlay
+        }
+    })
+}
+</script>

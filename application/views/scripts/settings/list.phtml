@@ -1,0 +1,21 @@
+<div class="sqlme-notice">
+    This is just a settings tab. Here you can enable or disable profiling.
+</div>
+<table>
+    <tr>
+        <td><label for="<?php echo SqlMe_System::SETTING_COUNT_PROFILER ?>">Enable count profiling</td>
+        <td><input type="checkbox" id="<?php echo SqlMe_System::SETTING_COUNT_PROFILER ?>" <?php echo $this->isCountingEnabled ?> /></td>
+    </tr>
+    <!-- tr>
+        <td><label for="<?php echo SqlMe_System::SETTING_SQL_MONITOR ?>">Enable SQL monitoring</td>
+        <td><input type="checkbox" id="<?php echo SqlMe_System::SETTING_SQL_MONITOR ?>" <?php echo $this->isMonitoringEnabled ?> /></td>
+    </tr -->
+</table>
+<script>
+jQuery("#<?php echo SqlMe_System::SETTING_COUNT_PROFILER ?>").change(function() {
+    jQuery.get("/wp-admin/admin-ajax.php?action=sqlme_settings_switch-counting")
+})
+jQuery("#<?php echo SqlMe_System::SETTING_SQL_MONITOR ?>").change(function() {
+    jQuery.get("/wp-admin/admin-ajax.php?action=sqlme_settings_switch-monitoring")
+})
+</script>

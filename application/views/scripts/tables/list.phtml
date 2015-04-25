@@ -1,0 +1,177 @@
+<div class="sqlme-notice">
+    Here you can see list of your database tables, it's engines and rows amount per table.
+    By default we provide rows amount only for MyISAM tables because they store rows amount as table metadata information.
+    In turn, InnoDB require rows evaluation which can lead to extra loading on a big tables.
+    For such tables you must click arrow icon to obtain rows count.<br />
+    Also you can see growth trend for those table, which have any datetime/timestamp field type. Plugin just calculate how
+    much rows pertain to particular date. You should interpret these data yourself.
+</div>
+<table width="100%" id="sqlme-table">
+    <tr>
+        <th align="left">Table name</th>
+        <th>Engine</th>
+        <th>Rows number</th>
+        <th class="sqlme-refresh-cell"><img src="/wp-content/plugins/SqlMe/public/img/refresh.png" /></th>
+    </tr>
+    <?php foreach ($this->tables as $table): ?>
+    <tr class="sqlme-data-rows">
+        <td>
+        <?php if (array_key_exists($table['name'], $this->datedTables)): ?>
+            <span class="sqlme-table-name" id="<?php echo $table['name'] . '-trends' ?>"><?php echo $table['name'] ?></span>
+        <?php else: ?>
+            <?php echo $table['name'] ?>
+        <?php endif ?>
+        </td>
+        <td align="center"><?php echo $table['engine'] ?></td>
+        <td align="center" class="sqlme-amount-cell"><?php echo $table['amount'] ?></td>
+        <td align="center" class="sqlme-refresh-cell"><img src="/wp-content/plugins/SqlMe/public/img/refresh.png" /></td>
+    </tr>
+    <?php if (array_key_exists($table['name'], $this->datedTables)): ?>
+        <tr class="sqlme-table-trend">
+            <td colspan="4" valign="top">
+                <form action="/wp-admin/admin-ajax.php?action=sqlme_tables_trend" class="sqlme-form-trend">
+                    <input type="hidden" value="<?php echo $table['name'] ?>" name="table">
+                    Field: <select name="field">
+                    <?php foreach ($this->datedTables[$table['name']] as $columnName): ?>
+                        <option value="<?php echo $columnName ?>"><?php echo $columnName ?></option>
+                    <?php endforeach ?>
+                    </select>
+                    From: <input type="text" class="sqlme-trend-datepicker" name="from">
+                    To: <input type="text" class="sqlme-trend-datepicker" name="to">
+                    <input type="submit" value="Show trends">
+                </form>
+                <div class="sqlme-table-trend-statistics">
+                    <div id="sqlme-<?php echo $table['name'] ?>-mean"></div>
+                </div>
+                <div class="sqlme-clear"></div>
+                <div id="sqlme-<?php echo $table['name'] ?>-trend"></div>
+            </td>
+        </tr>
+    <?php endif ?>
+    <?php endforeach ?>
+    <tr>
+        <td colspan="2"></td>
+        <td align="center" id="sqlme-total-amount"><?php echo $this->totalAmount ?></td>
+        <th class="sqlme-refresh-cell"><img src="/wp-content/plugins/SqlMe/public/img/refresh.png" /></th>
+    </tr>
+</table>
+<script>
+jQuery(document).ready(function() {
+    /*
+     * Show trends container.
+     */
+    jQuery(".sqlme-table-name").click(function() {
+        var $table = jQuery(this);
+        var tableName = $table.text();
+        var $row = $table.closest("tr");
+        $trendContainer = $row.next();
+        $trendContainer.slideToggle();
+
+        var today = new Date();
+        $trendContainer.find(".sqlme-trend-datepicker[name='from']").datepicker({
+            dateFormat: "dd/mm/yy"
+        }).datepicker("setDate", new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000))
+        $trendContainer.find(".sqlme-trend-datepicker[name='to']").datepicker({
+            dateFormat: "dd/mm/yy"
+        }).datepicker("setDate", new Date())
+    })
+    /*
+     * Load trends chart.
+     */
+    jQuery(".sqlme-form-trend").submit(function(event) {
+        event.preventDefault();
+
+        var $form = jQuery(this);
+        var table = $form.find("input[name='table']").val();
+        var field = $form.find("select[name='field']").val();
+        var from  = $form.find("input[name='from']").val();
+        var to    = $form.find("input[name='to']").val();
+        var url   = $form.attr("action");
+
+        var mask = Mask.show($form.closest("tr"), true);
+        jQuery.ajax(url, {
+            data: {
+                table: table,
+                field: field,
+                from: from,
+                to: to
+            }, success: function(data) {
+
+                mask.hide();
+                var chartElementId = "#sqlme-" + table + "-trend";
+                var $chart = jQuery(chartElementId);
+                $chart.empty();
+                jQuery("#sqlme-" + table + "-mean")
+                    .html('<a href="http://en.wikipedia.org/wiki/Average">Avg</a>: ' + data.average + " rows/day")
+
+                nv.addGraph(function() {
+                    var chart = nv.models.multiBarChart()
+                        .tooltips(true)
+                        .rotateLabels(-45)
+                        .margin({bottom: 70})
+                        .reduceXTicks(false)
+                        .showControls(false)
+                    .stacked(true)
+
+                    d3.select(chartElementId)
+                        .style("height", "400px")
+                        .append("svg")
+                        .datum(data.statistics)
+                        .transition()
+                        .duration(500)
+                    .call(chart);
+
+                    chart.yAxis.tickFormat(d3.format("d"))
+                    // chart.dispatch.on("renderEnd", alignLabels);
+
+                    nv.utils.windowResize(chart.update);
+
+                    return chart;
+                });
+
+            }, error: function() {
+                mask.hide();
+            }
+        })
+    })
+    /*
+     * Load table rows number.
+     */
+    jQuery(".sqlme-refresh-cell img").click(function(e) {
+        var cell = jQuery(this).parent();
+        switch (cell.prop("tagName").toLowerCase()) {
+            case "th": {
+                jQuery("#sqlme-table").find("tr.sqlme-data-rows").each(function() {
+                    jQuery(this).find("td:last img").trigger("click");
+                })
+            } break;
+            case "td": {
+                var tableName  = jQuery.trim(cell.parent().find("td:first-child").text());
+                var amountCell = cell.prev();
+                var mask = Mask.show(amountCell);
+
+                function createCallback(mask) {
+                    return function() {
+                        mask.hide();
+                        var cells = jQuery("#sqlme-table .sqlme-amount-cell");
+                        var values = jQuery.map(cells, function(cell) {
+                            var value = jQuery(cell).text();
+                            if (jQuery.isNumeric(value)) {
+                                return parseInt(value);
+                            } else {
+                                return 0;
+                            }
+                        })
+                        jQuery("#sqlme-total-amount").text(values.reduce(function(pv, cv) {
+                            return pv + cv;
+                        }, 0));
+                    }
+                }
+
+                var url = "/wp-admin/admin-ajax.php?action=sqlme_tables_count&table=" + tableName
+                amountCell.load(url, {}, createCallback(mask))
+            }
+        }
+    })
+});
+</script>
