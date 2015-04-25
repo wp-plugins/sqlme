@@ -41,7 +41,7 @@ class SqlMe_System_Wordpress extends SqlMe_System {
 
         add_action('wp_enqueue_scripts', array($this, 'setUpJqueryUi'));
         add_action('admin_menu', array($this, 'setUpMenu'));
-        register_activation_hook('SqlMe/index.php', 'setUpTables');
+        register_activation_hook('sqlme/index.php', 'setUpTables');
 
         if (isset($_REQUEST['action']) && ! empty($_REQUEST['action'])) {
             add_action('wp_ajax_' . $_REQUEST['action'], array('SqlMe', 'run'));
