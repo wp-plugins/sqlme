@@ -55,7 +55,7 @@ class SqlMe_System_Wordpress extends SqlMe_System {
     }
 
 
-    public function setUpTables() {
+    public function installPlugin() {
 
         require_once 'SqlMe/Driver.php';
 
