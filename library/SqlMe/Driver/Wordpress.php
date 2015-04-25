@@ -4,6 +4,37 @@
 class SqlMe_Driver_Wordpress extends SqlMe_Driver {
 
 
+    public function describeTable($table) {
+
+        global $wpdb;
+        return $wpdb->get_results('DESCRIBE ' . $table);
+    }
+
+
+    public function getDatedTables() {
+
+        $datedTables = array();
+
+        $tables = $this->getTables();
+        foreach ($tables as $table) {
+
+            $datedColumns = array();
+            $columns = $this->describeTable($table['name']);
+            foreach ($columns as $column) {
+                if (in_array($column->Type, SqlMe_Driver::$_dateTimeTypes)) {
+                    $datedColumns[] = $column->Field;
+                }
+            }
+
+            if (count($datedColumns) > 0) {
+                $datedTables[$table['name']] = $datedColumns;
+            }
+        }
+
+        return $datedTables;
+    }
+
+
     public function getAsNumericArray() {
 
         return ARRAY_N;

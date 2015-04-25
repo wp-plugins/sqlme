@@ -4,7 +4,8 @@
 abstract class SqlMe_System {
 
 
-    const SETTING_COUNTER = 'sqlme-profile-enabled';
+    const SETTING_COUNT_PROFILER = 'sqlme-count-profiler';
+    const SETTING_SQL_MONITOR = 'sqlme-sql-monitor';
 
 
     public static function factory() {
@@ -12,6 +13,12 @@ abstract class SqlMe_System {
         require_once 'SqlMe/System/Wordpress.php';
         return new SqlMe_System_Wordpress();
     }
+
+
+    abstract public function isAdmin();
+
+
+    abstract public function isSqlMonitoringEnabled();
 
 
     abstract public function isCountingEnabled();

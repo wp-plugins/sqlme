@@ -12,12 +12,13 @@ SqlMe - MySQL monitoring and profiling tool for developers and administrators.
 == Description ==
 
 SqlMe will help you with monitoring of MySQL server and understanding what it does when you sleep.
-Plugin features:
+Plugin will show you:
 
-* show how much queries wordpress does per page
-* show queries per table interactive bar chart (process list)
-* show database tables, their size and engine type
-* show MySQL configuration
+* how much queries wordpress does per page
+* MySQL server process list
+* database tables, their size and engine types
+* growth trends - how fast your table growth
+* MySQL configuration
 
 Plugin just in beta version and open to your ideas, notices and troubles :)
 
@@ -35,10 +36,15 @@ Just install it as a common plugin and find "SqlMe" menu item in admin area.
 
 1. MySQL server settings.
 2. Database tables statistics.
-3. Processlist barchart.
-4. SQL-queries per page statistics.
+3. Table growth trend.
+4. Processlist barchart.
+5. SQL-queries per page statistics.
 
 == Changelog ==
+
+= 0.9.1 =
+
+Add table growth trends statisctics.
 
 = 0.9 =
 

@@ -34,6 +34,13 @@ if ($System->isCountingEnabled()) {
     add_action('shutdown', array('SqlMe_Profiler', 'log'), 0);
 }
 
+// if ($System->isSqlMonitoringEnabled()) {
+//     require_once 'SqlMe/Profiler.php';
+//     add_filter('query', array('SqlMe_Profiler', 'query'), 0);
+//     add_action('shutdown', array('SqlMe_Profiler', 'dump'), 0);
+//     add_action('wp_footer', array('SqlMe_Profiler', 'dump'), 0);
+//     add_action('admin_footer', array('SqlMe_Profiler', 'dump'), 0);
+// }
 
 function installPlugin() {
 

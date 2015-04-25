@@ -4,11 +4,24 @@
 abstract class SqlMe_Driver {
 
 
+    public static $_dateTimeTypes = array(
+        'datetime',
+        'timestamp'
+    );
+
+
     public static function factory() {
 
         require_once 'SqlMe/Driver/Wordpress.php';
         return new SqlMe_Driver_Wordpress();
     }
+
+
+    abstract public function describeTable($table);
+
+
+    abstract public function getDatedTables();
+
 
     abstract public function selectCell($query, $args = array());
 

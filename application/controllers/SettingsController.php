@@ -8,13 +8,35 @@ class SettingsController extends Zend_Controller_Action {
 
         $System = $this->getFrontController()->getParam('bootstrap')->getResource('System');
 
-        if ($System->getSetting(SqlMe_System::SETTING_COUNTER) > 0) {
-            $isEnabled = 'checked="checked"';
+        if ($System->isCountingEnabled()) {
+            $isCountingEnabled = 'checked="checked"';
         } else {
-            $isEnabled = '';
+            $isCountingEnabled = '';
         }
 
-        $this->view->assign('isCountingEnabled', $isEnabled);
+        $this->view->assign('isCountingEnabled', $isCountingEnabled);
+
+
+        if ($System->isSqlMonitoringEnabled()) {
+            $isMonitoringEnabled = 'checked="checked"';
+        } else {
+            $isMonitoringEnabled = '';
+        }
+
+        $this->view->assign('isMonitoringEnabled', $isMonitoringEnabled);
+    }
+
+
+    public function switchMonitoringAction() {
+
+        $this->getHelper('ViewRenderer')->setNoRender();
+
+        $System = SqlMe_System::factory();
+        if ($System->getSetting(SqlMe_System::SETTING_SQL_MONITOR)) {
+            $System->setSetting(SqlMe_System::SETTING_SQL_MONITOR, false);
+        } else {
+            $System->setSetting(SqlMe_System::SETTING_SQL_MONITOR, true);
+        }
     }
 
 
@@ -22,11 +44,11 @@ class SettingsController extends Zend_Controller_Action {
 
         $this->getHelper('ViewRenderer')->setNoRender();
 
-        $System = $this->getFrontController()->getParam('bootstrap')->getResource('System');
-        if ($System->getSetting(SqlMe_System::SETTING_COUNTER)) {
-            $System->setSetting(SqlMe_System::SETTING_COUNTER, false);
+        $System = SqlMe_System::factory();
+        if ($System->getSetting(SqlMe_System::SETTING_COUNT_PROFILER)) {
+            $System->setSetting(SqlMe_System::SETTING_COUNT_PROFILER, false);
         } else {
-            $System->setSetting(SqlMe_System::SETTING_COUNTER, true);
+            $System->setSetting(SqlMe_System::SETTING_COUNT_PROFILER, true);
         }
     }
 }
